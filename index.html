@@ -13,7 +13,31 @@
             background-color: #FFFFFF; /* Sfondo bianco */
             color: #333333; /* Testo scuro per contrasto */
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
+        
+        /* Definizioni Animazioni */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .animate-fade-in-up {
+            opacity: 0; /* Stato iniziale per animazione */
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
         .hero-bg {
             background: linear-gradient(180deg, #FFFFFF 0%, #F5F7FA 100%); /* Sfumatura di bianco */
             position: relative;
@@ -25,8 +49,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="100" height="100" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0h100v100H0V0zm1 1h98v98H1V1zm2 2h96v96H3V3z" fill="%23E0E7FF" opacity=".15"/></svg>'); /* Pattern molto discreto */
-            opacity: 0.5;
+            /* Pattern reso ancora più discreto */
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg width="100" height="100" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0h100v100H0V0zm1 1h98v98H1V1zm2 2h96v96H3V3z" fill="%23E0E7FF" opacity=".15"/></svg>');
+            opacity: 0.3; /* Reso più sottile */
             z-index: -1;
         }
         .gradient-text {
@@ -48,6 +73,10 @@
             background-color: #F8F9FB; /* Sfondo leggermente grigio chiaro per le card */
             border: 1px solid #E0E7FF; /* Bordo azzurro chiaro */
             color: #333333; /* Testo scuro */
+            transition: transform 0.3s ease, box-shadow 0.3s ease; /* Transizione per hover */
+        }
+        .card:hover {
+             transform: translateY(-4px); /* Leggero sollevamento al hover */
         }
         .card h3 {
             color: #1A202C; /* Colore più scuro per i titoli delle card */
@@ -60,7 +89,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            border-radius: 1.5rem;
+            border-radius: 1.5rem; /* deve corrispondere al rounded-3xl di tailwind */
             padding: 1px;
             background: linear-gradient(45deg, #00C6FF, #0072FF); /* Bordo azzurro */
             -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -99,10 +128,12 @@
             align-items: center;
             opacity: 0.2; /* Rendi l'immagine un po' trasparente per far risaltare il testo */
             z-index: 1; /* Metti l'immagine dietro il contenuto testuale */
+            transition: opacity 0.3s ease;
         }
         .upcoming-image {
             height: 100%; /* L'altezza dell'immagine copre l'altezza della sezione */
             width: auto; /* Mantiene le proporzioni */
+            min-width: 100%; /* Assicura che copra sempre su mobile */
             object-fit: cover; /* Copre l'area mantenendo le proporzioni e tagliando se necessario */
         }
         .upcoming-content {
@@ -111,6 +142,7 @@
             background: rgba(26, 32, 44, 0.7); /* Sfondo scuro semitrasparente per il testo */
             padding: 3rem; /* Spaziatura interna */
             border-radius: 1.5rem;
+            transition: background 0.3s ease;
         }
 
         @media (min-width: 768px) {
@@ -121,6 +153,7 @@
                 left: 0;
                 transform: translateX(0);
                 width: 50%; /* L'immagine occupa metà della larghezza su desktop */
+                opacity: 1.0; /* --- MIGLIORAMENTO: Immagine a piena opacità su desktop */
             }
             .upcoming-image {
                 height: 100%;
@@ -130,6 +163,8 @@
                 margin-left: auto; /* Allinea a destra il contenuto */
                 width: 50%;
                 text-align: left;
+                background: transparent; /* --- MIGLIORAMENTO: Sfondo trasparente su desktop */
+                border-radius: 0; /* Rimuovi bordi arrotondati non necessari */
             }
         }
     </style>
@@ -138,11 +173,20 @@
 
     <header class="bg-white fixed top-0 left-0 w-full z-50 shadow-sm">
         <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <div class="flex items-center">
-                <img src="logo.png" alt="DelegateAI Logo" class="h-8 mr-3">
+            <a href="#" class="flex items-center gap-3" aria-label="DelegateAI Homepage">
+                <svg width="32" height="32" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="logoGradient" x1="0" y1="0" x2="40" y2="40">
+                            <stop offset="0%" stop-color="#00C6FF"/>
+                            <stop offset="100%" stop-color="#0072FF"/>
+                        </linearGradient>
+                    </defs>
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M20 0C8.95431 0 0 8.95431 0 20C0 31.0457 8.95431 40 20 40C31.0457 40 40 31.0457 40 20C40 8.95431 31.0457 0 20 0ZM20 36C11.1634 36 4 28.8366 4 20C4 11.1634 11.1634 4 20 4C28.8366 4 36 11.1634 36 20C36 28.8366 28.8366 36 20 36Z" fill="url(#logoGradient)"/>
+                    <path d="M16 12L28 20L16 28V12Z" fill="url(#logoGradient)"/>
+                </svg>
                 <span class="text-xl font-extrabold text-dark">DelegateAI</span>
-            </div>
-            <a href="mailto:hello@delegatai.com" class="btn-primary font-semibold py-2 px-6 rounded-full">
+            </a>
+            <a href="mailto:hello@delegatai.com" class="btn-primary font-semibold py-2 px-6 rounded-full hidden sm:inline-block">
                 Contattaci
             </a>
         </nav>
@@ -150,16 +194,16 @@
 
     <section class="hero-bg min-h-screen flex items-center pt-20">
         <div class="container mx-auto px-6 text-center">
-            <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-4 text-dark">
+            <h1 class="text-5xl md:text-7xl font-extrabold leading-tight mb-4 text-dark animate-fade-in-up" style="animation-delay: 0.1s;">
                 Semplifica il Tuo Mondo, <br>
                 <span class="gradient-text">Con la Potenza dell'AI.</span>
             </h1>
-            <p class="text-lg md:text-xl text-gray-medium max-w-3xl mx-auto mb-8">
+            <p class="text-lg md:text-xl text-gray-medium max-w-3xl mx-auto mb-8 animate-fade-in-up" style="animation-delay: 0.3s;">
                 DelegateAI è la tua startup innovativa che trasforma la complessità in soluzioni intuitive.
                 Creiamo assistenti AI personalizzati che apprendono il tuo business,
                 liberando il tuo tempo per ciò che conta davvero.
             </p>
-            <a href="#vision" class="btn-primary font-bold text-lg py-4 px-10 rounded-full inline-block">
+            <a href="#vision" class="btn-primary font-bold text-lg py-4 px-10 rounded-full inline-block animate-fade-in-up" style="animation-delay: 0.5s;">
                 Scopri la nostra Visione
             </a>
         </div>
@@ -184,9 +228,10 @@
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
                 
-                <div class="card p-8 rounded-3xl glow-effect">
+                <div class="card p-8 rounded-3xl glow-effect animate-fade-in-up" style="animation-delay: 0.2s;">
                     <div class="flex items-center justify-center h-16 w-16 icon-bg-blue rounded-full mb-6">
-                        <i class="fas fa-brain text-white text-3xl"></i> </div>
+                        <i class="fas fa-brain text-white text-3xl"></i>
+                    </div>
                     <h3 class="text-2xl font-bold mb-3">Assistenti Intelligenti</h3>
                     <p class="text-gray-medium">
                         I nostri assistenti AI apprendono dai tuoi contenuti, dai tuoi documenti al tuo sito web,
@@ -194,9 +239,10 @@
                     </p>
                 </div>
 
-                <div class="card p-8 rounded-3xl glow-effect">
+                <div class="card p-8 rounded-3xl glow-effect animate-fade-in-up" style="animation-delay: 0.4s;">
                     <div class="flex items-center justify-center h-16 w-16 icon-bg-blue rounded-full mb-6">
-                        <i class="fas fa-palette text-white text-3xl"></i> </div>
+                        <i class="fas fa-palette text-white text-3xl"></i>
+                    </div>
                     <h3 class="text-2xl font-bold mb-3">Stile Unico, Il Tuo.</h3>
                     <p class="text-gray-medium">
                         Ogni assistente si adatta al tuo tono di voce e al tuo linguaggio,
@@ -204,9 +250,10 @@
                     </p>
                 </div>
 
-                <div class="card p-8 rounded-3xl glow-effect">
+                <div class="card p-8 rounded-3xl glow-effect animate-fade-in-up" style="animation-delay: 0.6s;">
                     <div class="flex items-center justify-center h-16 w-16 icon-bg-blue rounded-full mb-6">
-                        <i class="fas fa-rocket text-white text-3xl"></i> </div>
+                        <i class="fas fa-rocket text-white text-3xl"></i>
+                    </div>
                     <h3 class="text-2xl font-bold mb-3">Implementazione Semplice</h3>
                     <p class="text-gray-medium">
                         Dimentica le complessità tecniche. Il nostro sistema gestisce tutto il backend,
@@ -220,19 +267,19 @@
 
     <section id="upcoming" class="upcoming-section py-20 text-center relative flex items-center justify-center">
         <div class="upcoming-image-container">
-            <img src="your-image.jpeg" alt="DelegateAI AI microchip" class="upcoming-image">
+            <img src="https://source.unsplash.com/800x1200/?technology,network,abstract" alt="DelegateAI AI microchip" class="upcoming-image">
         </div>
         <div class="container mx-auto px-6 relative z-20">
             <div class="upcoming-content p-12 rounded-3xl max-w-4xl mx-auto text-white">
-                <h2 class="text-4xl md:text-5xl font-extrabold mb-4">
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-4 animate-fade-in-up" style="animation-delay: 0.2s;">
                     Nuovi Orizzonti con l'AI
                 </h2>
-                <p class="text-xl text-gray-300 mb-8">
+                <p class="text-xl text-gray-300 mb-8 animate-fade-in-up" style="animation-delay: 0.4s;">
                     Stiamo per lanciare il nostro assistente alle vendite basato su AI,
                     progettato per rivoluzionare il modo in cui interagisci con i tuoi clienti.
                     Preparati a un supporto vendita sempre attivo e incredibilmente efficace.
                 </p>
-                <div class="text-2xl font-bold bg-white text-dark py-4 px-10 rounded-full inline-block">
+                <div class="text-2xl font-bold bg-white text-dark py-4 px-10 rounded-full inline-block animate-fade-in-up" style="animation-delay: 0.6s;">
                     Presto Disponibile!
                 </div>
             </div>
