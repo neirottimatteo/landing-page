@@ -5,26 +5,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const ctx = canvas.getContext('2d');
     let animationFrameId;
 
-    // --- NUOVA LOGICA DI SCALING (Base + Densità) ---
-    // Non usiamo più solo PARTICLE_DENSITY.
-    // Garantiamo un numero minimo di pallini, e ne aggiungiamo altri in base allo spazio.
-    const MIN_PARTICLES_BASE = 12; // Numero minimo garantito di pallini (per schermi piccoli/iPhone)
-    const PARTICLE_DENSITY_FACTOR = 70000; // Aggiungi 1 pallino ogni 70.000 pixel di area (sopra la base)
+    const MIN_PARTICLES_BASE = 15; 
+    const PARTICLE_DENSITY_FACTOR = 60000; 
     let targetParticleCount = 0; 
-    // --- FINE NUOVA LOGICA ---
 
     const particles = []; 
-    const LINE_FADE_SPEED = 0.004; 
-    const PARTICLE_BASE_SPEED = 0.75; 
-    const PARTICLE_SPEED_VARIANCE = 0.4; 
-    const MAX_ANGULAR_VELOCITY = 0.04; 
-    const ANGULAR_CHANGE_RATE = 0.007; 
+    const LINE_FADE_SPEED = 0.006; 
+    const PARTICLE_BASE_SPEED = 0.6; 
+    const PARTICLE_SPEED_VARIANCE = 0.5; 
+    const MAX_ANGULAR_VELOCITY = 0.03; 
+    const ANGULAR_CHANGE_RATE = 0.005; 
 
+    // Dark Mode Colors matching the HTML gradients
     const particleColors = [
-        'rgba(0, 114, 255, 1)', 
-        'rgba(0, 150, 255, 1)', 
-        'rgba(0, 198, 255, 1)', 
-        'rgba(0, 100, 200, 1)'  
+        'rgba(56, 189, 248, 1)',   // Sky 400
+        'rgba(99, 102, 241, 1)',   // Indigo 500
+        'rgba(129, 140, 248, 1)',  // Indigo 400
+        'rgba(14, 165, 233, 1)'    // Sky 500
     ];
 
     let repulsionZones = []; 
@@ -43,28 +40,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     height: rect.height,
                     centerX: rect.left + rect.width / 2,
                     centerY: rect.top + rect.height / 2,
-                    influenceRadius: (Math.max(rect.width, rect.height) / 2) + 60 
+                    influenceRadius: (Math.max(rect.width, rect.height) / 2) + 80 
                 });
             }
         });
     }
 
-    // Questa funzione ora calcola anche il numero di particelle necessarie
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         
         const area = canvas.width * canvas.height;
-        
-        // --- CALCOLO AGGIORNATO (Base + Scalabilità) ---
         targetParticleCount = MIN_PARTICLES_BASE + Math.floor(area / PARTICLE_DENSITY_FACTOR);
-        // --- FINE CALCOLO ---
 
         updateRepulsionZone();
     }
 
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas(); // Chiamata iniziale
+    resizeCanvas(); 
 
     class Particle {
         constructor() {
@@ -92,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
             }
 
-            this.radius = 3.5 + Math.random() * 1.5; 
+            this.radius = 2.5 + Math.random() * 1.5; 
             this.color = particleColors[Math.floor(Math.random() * particleColors.length)]; 
 
             this.speed = PARTICLE_BASE_SPEED + Math.random() * PARTICLE_SPEED_VARIANCE;
@@ -106,12 +99,11 @@ document.addEventListener('DOMContentLoaded', () => {
             this.angularVelocity = (Math.random() - 0.5) * MAX_ANGULAR_VELOCITY * 0.5; 
 
             this.trail = [];
-            this.maxTrailLength = 300 + Math.random() * 100; 
-            this.lineThickness = 1.5 + Math.random() * 0.5; 
+            this.maxTrailLength = 200 + Math.random() * 150; 
+            this.lineThickness = 1.0 + Math.random() * 1.0; 
         }
 
         update() {
-            // Logica di repulsione
             if (repulsionZones.length > 0) {
                 repulsionZones.forEach(zone => {
                     const dx = this.x - zone.centerX;
@@ -125,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
 
-            // Logica movimento curvo
             if (Math.random() < ANGULAR_CHANGE_RATE) {
                 this.angularVelocity = (Math.random() - 0.5) * MAX_ANGULAR_VELOCITY;
             }
@@ -150,15 +141,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         draw() {
-            // Disegna scia
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = this.color;
+
             if (this.trail.length > 1) {
                 for (let i = 0; i < this.trail.length - 1; i++) {
                     const p1 = this.trail[i];
                     const p2 = this.trail[i + 1];
 
                     const lineGradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
-                    lineGradient.addColorStop(0, `rgba(0, 114, 255, ${p1.opacity * 0.7})`); 
-                    lineGradient.addColorStop(1, `rgba(0, 198, 255, ${p1.opacity * 0.7})`); 
+                    const colorRGB = this.color.match(/\d+, \d+, \d+/)[0]; 
+                    
+                    lineGradient.addColorStop(0, `rgba(${colorRGB}, ${p1.opacity * 0.6})`); 
+                    lineGradient.addColorStop(1, `rgba(${colorRGB}, ${p1.opacity * 0.6})`); 
 
                     ctx.beginPath();
                     ctx.moveTo(p1.x, p1.y);
@@ -170,19 +165,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Disegna pallino
             ctx.beginPath();
             ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
             ctx.fillStyle = this.color;
             ctx.fill();
+            
+            ctx.shadowBlur = 0;
         }
     }
-
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height); 
 
-        // Gestione dinamica dei pallini
         while (particles.length < targetParticleCount) {
             particles.push(new Particle());
         }
@@ -190,7 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
             particles.pop();
         }
 
-        // Aggiorna e disegna i pallini esistenti
         particles.forEach(particle => {
             particle.update();
             particle.draw();
@@ -212,5 +205,5 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }, { threshold: 0.1 }); 
-    observer.observe(heroSection);
+    if(heroSection) observer.observe(heroSection);
 });
